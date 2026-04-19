@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "shivaamaroju/chat-app-pro"
-        CONTAINER_NAME = "chat-app-instance"
+        // Ensure you have a 'kubeconfig' secret stored in Jenkins
+        KUBE_CONFIG_ID = "aks-kubeconfig" 
     }
 
     stages {
@@ -13,27 +14,33 @@ pipeline {
             }
         }
 
-        stage('Build Image') {
-            steps {
-                sh "docker build -t ${DOCKER_IMAGE}:latest ."
-            }
-        }
-
-        stage('Stop Existing Container') {
+        stage('Docker Build & Push') {
             steps {
                 script {
-                    // This stops and removes the container if it's already running to avoid port conflicts
-                    sh "docker stop ${CONTAINER_NAME} || true"
-                    sh "docker rm ${CONTAINER_NAME} || true"
+                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                    // You must be logged into Docker Hub on the Jenkins node
+                    sh "docker push ${DOCKER_IMAGE}:latest"
                 }
             }
         }
 
-        stage('Run Container') {
+        stage('Deploy to AKS') {
             steps {
-                // Runs the container in detached mode on port 8090
-                sh "docker run -d --name ${CONTAINER_NAME} -p 8090:8090 ${DOCKER_IMAGE}:latest"
-                echo "App is now running at http://localhost:8090"
+                // This uses the Jenkins Kubernetes CLI plugin or a pre-configured kubeconfig
+                withKubeConfig([credentialsId: "${KUBE_CONFIG_ID}"]) {
+                    sh "kubectl apply -f deployment.yaml"
+                    sh "kubectl apply -f service.yaml"
+                    
+                    // Force a restart to pull the 'latest' image if it hasn't changed tags
+                    sh "kubectl rollout restart deployment/chat-app-deployment"
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh "kubectl get pods"
+                sh "kubectl get service chat-app-service"
             }
         }
     }
