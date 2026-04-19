@@ -3,14 +3,11 @@ kind: Ingress
 metadata:
   name: chat-app-ingress
   annotations:
-    # This tells NGINX to handle the routing
+    # Important: NGINX Controller ni use cheyamani chepthunnam
     kubernetes.io/ingress.class: "nginx"
-    # Enable Sticky Sessions for Socket.io
+    # Socket.io kosam Sticky Sessions (Affinity)
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "route"
-    # Allow long-lived WebSocket connections
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 spec:
   rules:
   - http:
