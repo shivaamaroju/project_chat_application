@@ -3,12 +3,13 @@ kind: Ingress
 metadata:
   name: chat-app-ingress
   annotations:
-    # Important: NGINX Controller ni use cheyamani chepthunnam
-    kubernetes.io/ingress.class: "nginx"
-    # Socket.io kosam Sticky Sessions (Affinity)
+    # NGINX ని రూటింగ్ కోసం వాడమని చెప్తున్నాం
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Socket.io కోసం స్టిక్కీ సెషన్స్
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "route"
 spec:
+  ingressClassName: nginx
   rules:
   - http:
       paths:
