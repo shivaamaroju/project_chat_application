@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send({ response: "Server is up and running." }).status(200);
+// Change "/" to "/health" so it doesn't block your React UI
+router.get("/health", (req, res) => {
+  res.status(200).send({ response: "Server is up and running." });
 });
 
 module.exports = router;
