@@ -28,10 +28,12 @@ pipeline {
                 // withCredentials is a standard method that is definitely in your list!
                 withCredentials([file(credentialsId: "${KUBE_CONFIG_SECRET_ID}", variable: 'KUBECONFIG_FILE')]) {
                     script {
-                        // We set the KUBECONFIG env var to the path of the secret file
-                        sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl apply -f deployment.yaml"
-                        sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl apply -f service.yaml"
-                        sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl rollout restart deployment/chat-app-deployment"
+                      sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl apply -f deployment.yaml"
+                sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl apply -f service.yaml"
+                // కొత్తగా యాడ్ చేస్తున్న లైన్:
+                sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl apply -f ingress.yaml"
+                
+                sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl rollout restart deployment/chat-app-deployment"
                     }
                 }
             }
