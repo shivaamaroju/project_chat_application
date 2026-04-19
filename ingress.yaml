@@ -3,11 +3,14 @@ kind: Ingress
 metadata:
   name: chat-app-ingress
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    # Rewrite target valla static files and paths correct ga work avthayi
     nginx.ingress.kubernetes.io/rewrite-target: /
+    # Socket.io connection drop avvakunda Sticky Sessions enable chesthunnam
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "route"
 spec:
+  # Ee line chala important, Controller deenni batti recognize chesthundhi
+  ingressClassName: nginx 
   rules:
   - http:
       paths:
@@ -20,7 +23,7 @@ spec:
             port:
               number: 80
       
-      # 2. Kotha Profile Feature Path
+      # 2. Profile Feature Path
       - path: /profile
         pathType: Prefix
         backend:
