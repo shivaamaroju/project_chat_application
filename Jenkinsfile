@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "shivaamaroju/chat-app-pro"
-        // Ensure you have a 'kubeconfig' secret stored in Jenkins
-        KUBE_CONFIG_ID = "aks-kubeconfig" 
+        // This is the ID you will give to your secret file in Jenkins
+        KUBE_CONFIG_SECRET_ID = "aks-kubeconfig-file" 
     }
 
     stages {
@@ -18,7 +18,6 @@ pipeline {
             steps {
                 script {
                     sh "docker build -t ${DOCKER_IMAGE}:latest ."
-                    // You must be logged into Docker Hub on the Jenkins node
                     sh "docker push ${DOCKER_IMAGE}:latest"
                 }
             }
@@ -26,21 +25,15 @@ pipeline {
 
         stage('Deploy to AKS') {
             steps {
-                // This uses the Jenkins Kubernetes CLI plugin or a pre-configured kubeconfig
-                withKubeConfig([credentialsId: "${KUBE_CONFIG_ID}"]) {
-                    sh "kubectl apply -f deployment.yaml"
-                    sh "kubectl apply -f service.yaml"
-                    
-                    // Force a restart to pull the 'latest' image if it hasn't changed tags
-                    sh "kubectl rollout restart deployment/chat-app-deployment"
+                // withCredentials is a standard method that is definitely in your list!
+                withCredentials([file(credentialsId: "${KUBE_CONFIG_SECRET_ID}", variable: 'KUBECONFIG_FILE')]) {
+                    script {
+                        // We set the KUBECONFIG env var to the path of the secret file
+                        sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl apply -f deployment.yaml"
+                        sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl apply -f service.yaml"
+                        sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl rollout restart deployment/chat-app-deployment"
+                    }
                 }
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                sh "kubectl get pods"
-                sh "kubectl get service chat-app-service"
             }
         }
     }
