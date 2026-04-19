@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profile-app
+  template:
+    metadata:
+      labels:
+        app: profile-app
+    spec:
+      containers:
+      - name: profile-app
+        image: nginx # Just for testing
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profile-app-service
+spec:
+  type: ClusterIP
+  selector:
+    app: profile-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
